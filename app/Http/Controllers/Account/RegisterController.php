@@ -10,29 +10,23 @@ use Validator;
 
 class RegisterController extends Controller
 {
-    public function postRegister(Request $request) {
+    public function register(Request $request) {
         $apiFormat = array();
 
         $validator = Validator::make($request->all(), [
-            'username' => 'required',
-            'password' => 'required|min:6',
+            'account' => 'required|unique:memb_info,memb___id',
+            'pass1' => 'required|min:6',
             'pass2' => 'required|min:6',
-//            'question' => 'required',
-//            'answer' => 'required',
-            'numb' => 'required|numeric',
-            'email' => 'required',
-            'type_email' => 'required',
+            'email' => 'required|unique:memb_info,mail_addr',
             'phone' => 'required|numeric'
         ],
             [
-                'username.required' => 'Tên tài khoản không được rỗng',
-                'password.required' => 'Chưa điền mật khẩu game',
+                'account.required' => 'Tên tài khoản không được rỗng',
+                'account.unique' => 'Tên tài khoản đã được sử dụng',
+                'pass1.required' => 'Chưa điền mật khẩu game',
                 'pass2.required' => 'Chưa điền mật khẩu Web cấp 2',
-//                'question.required' => 'Chưa chọn câu hỏi',
-//                'answer.required' => 'Chưa điền câu trả lời bí mật',
-                'numb.required' => 'Chưa điền 7 số bí mật',
                 'email.required' => 'Chưa điền email',
-                'type_email.required' => 'Chưa chọn kiểu email',
+                'email.unique' => 'Địa chỉ email đã có người sử dụng',
                 'phone.required' => 'Chưa nhập số điện thoại'
             ]);
 
@@ -48,19 +42,19 @@ class RegisterController extends Controller
         //tel__numb,time_checksms,thehe, ip
 
         $user = new Memb_Info();
-        $user->memb___id = $request->username;
-        $user->memb__pwd = $request->password;
-        $user->memb_name = $request->username;
+        $user->memb___id = $request->account;
+        $user->memb__pwd = $request->pass1;
+        $user->memb_name = $request->account;
 //        $user->memb__pwd2 = $request->pass1;
         $user->memb__pwdmd5 = md5($request->pass2);
         $user->pass2 = $request->pass2;
 //        $user->fpas_ques = $request->question;
 //        $user->fpas_answ = $request->answer;
-        $user->sno__numb = $request->numb;
+        $user->sno__numb = '11111111111111111';
         $user->mail_addr = $request->email;
         $user->tel__numb = $request->phone;
         $user->ctl1_code = 0;
-        $user->ip = $request->ip;
+//        $user->ip = $request->ip;
 
         if ($user->save()) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_OK;
