@@ -17,7 +17,7 @@ Route::get('/', function () {
 
 Route::post('/register', ['uses' => 'Account\RegisterController@register']);
 Route::post('/login', ['uses' => 'Account\LoginController@login']);
-Route::post('/getInfoCharacter', ['uses' => 'CharacterController@getInfoCharacter']);
+Route::post('/getInfoCharacter', ['uses' => 'Character\CharacterController@getInfoCharacter']);
 
 Route::group(['prefix' => 'profile', 'middleware' => ['checkLogin']], function () {
 
