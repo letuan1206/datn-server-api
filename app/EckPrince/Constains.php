@@ -12,4 +12,11 @@ class Constains
     const RESPONSE_STATUS_ERROR = 0;
     const RESPONSE_STATUS_LOGOUT = 2;
 
+    const SMS_TYPE = [
+        "PASS1" => 1,
+        "PASS2" => 2,
+        "EMAIL" => 3,
+        "PHONE_NUMBER" => 4,
+    ];
+
 }

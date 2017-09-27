@@ -18,9 +18,9 @@ Route::get('/', function () {
 Route::post('/register', ['uses' => 'Account\RegisterController@register']);
 Route::post('/login', ['uses' => 'Account\LoginController@login']);
 Route::post('/getInfoCharacter', ['uses' => 'Character\CharacterController@getInfoCharacter']);
+Route::post('/getSMSService', ['uses' => 'Account\AccountController@getSMSService']);
 
 Route::group(['prefix' => 'profile', 'middleware' => ['checkLogin']], function () {
-
     Route::post('/getProfile', ['uses' => 'ProfileController@getProfile']);
     Route::post('/changeNameMember', ['uses' => 'ProfileController@getChangeNameMember']);
     Route::post('/changePassword', ['uses' => 'ProfileController@getChangePassword']);
