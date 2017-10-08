@@ -31,7 +31,7 @@ class AllFunctions
     function randomPassword($len)
     {
         $result = "";
-        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        $chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         $numbers = "0123456789";
         $charArray = str_split($chars);
         $numberArray = str_split($numbers);
@@ -89,9 +89,9 @@ class AllFunctions
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'pass2')->where('memb___id', $memb___id)->where('pass2', $pass2)->first();
         if (count($check) > 0) {
-            return 1;
+            return true;
         }
-        return 0;
+        return false;
     }
 
     function check_sliver($memb___id, $gcoin_need)
@@ -168,7 +168,7 @@ class AllFunctions
     function check_seri_in_array($seri, $array)
     {
         foreach ($array as $item) {
-            if ($item->seri === $seri) {
+            if ($item->item_seri === $seri) {
                 return true;
             }
         }

@@ -18,16 +18,22 @@ Route::get('/', function () {
 Route::post('/register', ['uses' => 'Account\RegisterController@register']);
 Route::post('/login', ['uses' => 'Account\LoginController@login']);
 Route::post('/getInfoCharacter', ['uses' => 'Character\CharacterController@getInfoCharacter']);
-Route::post('/getSMSService', ['uses' => 'Account\AccountController@getSMSService']);
+Route::get('/getSMSService', ['uses' => 'Account\AccountController@getSMSService']);
 
-Route::group(['prefix' => 'profile', 'middleware' => ['checkLogin']], function () {
-    Route::post('/getProfile', ['uses' => 'ProfileController@getProfile']);
-    Route::post('/changeNameMember', ['uses' => 'ProfileController@getChangeNameMember']);
-    Route::post('/changePassword', ['uses' => 'ProfileController@getChangePassword']);
-    Route::post('/changePassword2', ['uses' => 'ProfileController@getChangePassword2']);
-    Route::post('/changeEmail', ['uses' => 'ProfileController@getChangeEmail']);
-    Route::post('/changeQuestAnswer', ['uses' => 'ProfileController@getChangeQuestAnswer']);
-    Route::post('/changeSnoNumber', ['uses' => 'ProfileController@getChangeSnoNumber']);
-    Route::post('/changePhoneNumber', ['uses' => 'ProfileController@getChangePhoneNumber']);
-    Route::post('/getSendInfoToEmail', ['uses' => 'ProfileController@getSendInfoToEmail']);
+Route::group(['prefix' => 'account'], function () {
+    Route::post('/changeAccountInfoUseSMS', ['uses' => 'Account\AccountController@changeAccountInfoUseSMS']);
+});
+
+Route::group(['prefix' => 'bank'], function () {
+    Route::get('/getBankInfo', ['uses' => 'Bank\BankController@getBankInfo']);
+    Route::post('/bankTransfer', ['uses' => 'Bank\BankController@bankTransfer']);
+    Route::post('/changeMoney', ['uses' => 'Bank\BankController@changeMoney']);
+    Route::post('/buyItemSliver', ['uses' => 'Bank\BankController@buyItemSliver']);
+    Route::post('/sellItemSliver', ['uses' => 'Bank\BankController@sellItemSliver']);
+    Route::post('/jewelAction', ['uses' => 'Bank\BankController@jewelAction']);
+});
+
+Route::group(['prefix' => 'event'], function () {
+    Route::post('/checkInEventList', ['uses' => 'Event\EventController@getEventList']);
+    Route::post('/addCheckIn', ['uses' => 'Event\EventController@addCheckIn']);
 });

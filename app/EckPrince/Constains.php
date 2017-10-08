@@ -15,8 +15,13 @@ class Constains
     const SMS_TYPE = [
         "PASS1" => 1,
         "PASS2" => 2,
-        "EMAIL" => 3,
+        "SNO_NUMBER" => 3,
         "PHONE_NUMBER" => 4,
+        "EMAIL" => 5,
+        "FORGOT_PASS" => 6
     ];
+
+    const SMS_STATUS_PENDING = 0;
+    const SMS_STATUS_ACTIVE = 1;
 
 }
