@@ -27,12 +27,13 @@ class AccountController extends Controller
 //        $subCode = $request->get('subCode');         // Ma phu
 //        $info = $request->get('info');            // Noi dung tin nhan
 
-        $mobile = str_replace('+84', '0', $request->get('mobile'));          // So dien thoai +84
-        $info = str_replace("  ", " ", $request->get('info'));
+//        $mobile = str_replace('+84', '0', $request->get('mobile'));          // So dien thoai +84
+        $mobile = '0' . substr($request->get('mobile'), 2);
+        $info = strtoupper(str_replace("  ", " ", $request->get('info')));
         $info = explode(SystemConfig::SMS_SYNC_TAX . ' ', $info);
 
         if (!isset($info[1])) {
-            return "0|Sai cú pháp. Liên hệ Admin để fix";
+            return "0|Sai cu phap. Lien he Admin de fix";
         }
         $info_arr = explode(' ', $info[1]);
         switch ($info_arr[0]) {
@@ -50,41 +51,36 @@ class AccountController extends Controller
                         ->first();
 
                     if (count($acc_info) == 0) {
-                        return "0|Không tìm thấy thông tin tài khoản!";
+                        return "0|Khong tim thay thong tin tai khoan!";
                     }
                     if ($acc_info->tel__numb == '' || $acc_info->tel__numb == null) {
-                        return "0|Sai thông tin tài khoản và số điện thoại!";
+                        return "0|Sai thong tin tai khoan hoac so dien thoai!";
                     }
 
                     $flag = true;
                     $msg = "Loi! Ma code sai. Lien he admin de fix!";
+                    $login_token = $this->dependence->randStrGen(40);
                     switch ($check_sms->sms_type) {
                         case Constains::SMS_TYPE['PASS1']:
                         case Constains::SMS_TYPE['FORGOT_PASS']:
-                            $acc_info->memb__pwd = $check_sms->info_change;
                             $msg = "Tai khoan: $check_sms->account doi mat khau cap 1 thanh $check_sms->info_change";
-                            $acc_info->save();
+                            DB::update('update MEMB_INFO set memb__pwd = ?, checklogin = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['PASS2']:
-                            $acc_info->memb__pwdmd5 = md5($check_sms->info_change);
-                            $acc_info->pass2 = $check_sms->info_change;
                             $msg = "Tai khoan: $check_sms->account doi mat khau cap 2 thanh $check_sms->info_change";
-                            $acc_info->save();
+                            DB::update('update MEMB_INFO set memb__pwdmd5 = ?, pass2 = ? where memb___id = ?', [md5($check_sms->info_change), $check_sms->info_change, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['SNO_NUMBER']:
-                            $acc_info->sno__numb = $check_sms->info_change;
                             $msg = "Tai khoan: $check_sms->account doi 7 so bi mat thanh $check_sms->info_change";
-                            $acc_info->save();
+                            DB::update('update MEMB_INFO set sno__numb = ? where memb___id = ?', [$check_sms->info_change, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['PHONE_NUMBER']:
-                            $acc_info->tel__numb = $check_sms->info_change;
                             $msg = "Tai khoan: $check_sms->account doi so dien thoai thanh $check_sms->info_change";
-                            $acc_info->save();
+                            DB::update('update MEMB_INFO set tel__numb = ?, checklogin = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['EMAIL']:
-                            $acc_info->mail_addr = $check_sms->info_change;
                             $msg = "Tai khoan: $check_sms->account doi email thanh $check_sms->info_change";
-                            $acc_info->save();
+                            DB::update('update MEMB_INFO set mail_addr = ? where memb___id = ?', [$check_sms->info_change, $check_sms->account]);
                             break;
                         default:
                             $flag = false;
@@ -96,7 +92,7 @@ class AccountController extends Controller
                     }
                     return "0|$msg";
                 } else {
-                    return "0|Mã không tồn tại hoặc hết hạn!";
+                    return "0|Ma khong ton tai hoac da het han!";
                 }
                 break;
         }

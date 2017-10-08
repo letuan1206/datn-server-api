@@ -12,7 +12,7 @@ namespace App\EckPrince;
 class SystemConfig
 {
 //  CONFIG SMS
-    const SMS_SYNC_TAX = 'DV MUHN';
+    const SMS_SYNC_TAX = 'DV MUML';
     const SMS_HEAD_PHONE = '8085';
     const SMS_TIME_REMAINING = 5;
 
@@ -24,4 +24,8 @@ class SystemConfig
     const SOUL_TO_JEWEL = 6;
     const LIFE_TO_JEWEL = 12;
     const FEE_JEWEL_ACTION = 1000;
+
+// CONFIG CHARACTER CONTROLLER
+    const RESET_SKILL_MASTER_SLIVER = 500;
+    const RESET_SKILL_MASTER_ZEN    = 10000000;
 }

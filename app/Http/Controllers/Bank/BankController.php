@@ -162,7 +162,7 @@ class BankController extends Controller
         $bank = Memb_Info::select('memb___id', 'bank_sliver', 'wcoin')
             ->where('memb___id', $request->account)->first();
 
-        if (!$this->dependence->check_pass2($request->account, $request->pass2)) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
@@ -232,7 +232,7 @@ class BankController extends Controller
             return response()->json($apiFormat);
         }
 
-        if ($this->dependence->check_pass2($request->account, $request->pass2) == 0) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
@@ -349,7 +349,7 @@ class BankController extends Controller
             return response()->json($apiFormat);
         }
 
-        if ($this->dependence->check_pass2($request->account, $request->pass2) == 0) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
@@ -388,7 +388,10 @@ class BankController extends Controller
                 $code2 = substr($item, 18, 1);
                 $seri = substr($item, 6, 8);
                 $seri_dex = hexdec($seri);
-
+                // 3 238 569 216
+                // 4294967280
+                // 1507420800
+                // 871410176
                 if (($seri_dex != 0 && $seri_dex < 4294967280) && $this->dependence->check_seri_in_array($seri, $list_log_seri) == false) {
                     if ($code1 === "0C10" AND $code2 === "E") {
                         $itemtype = "Item Sliver 1k";

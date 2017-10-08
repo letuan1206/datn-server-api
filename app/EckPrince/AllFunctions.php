@@ -103,22 +103,22 @@ class AllFunctions
         return 1;
     }
 
-    function check_bank_sliver_lock($memb___id, $gcoin_need)
+    function check_bank_sliver_and_sliver_lock($memb___id, $gcoin_need)
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'bank_sliver', 'bank_sliver_lock')->where('memb___id', $memb___id)->first();
         if (($check->bank_sliver + $check->bank_sliver_lock) < $gcoin_need) {
-            return 0;
+            return true;
         }
-        return 1;
+        return false;
     }
 
-    function check_zen_bank($memb___id, $zen_need)
+    function check_bank_zen($memb___id, $zen_need)
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'bank_zen')->where('memb___id', $memb___id)->first();
         if ($check->bank_zen < $zen_need) {
-            return 0;
+            return true;
         }
-        return 1;
+        return false;
     }
 
     function get_reset_day($name)

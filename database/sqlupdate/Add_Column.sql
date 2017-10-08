@@ -32,3 +32,17 @@ IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='MEMB_
 		PRINT 'ADDED Column MEMB_INFO.bank_jewel_lock'
 	END
 ELSE BEGIN PRINT 'Exist Column MEMB_INFO.bank_jewel_lock' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='lock_item' )
+	BEGIN
+		Alter TABLE Character ADD lock_item tinyint NOT NULL DEFAULT 0
+		PRINT 'ADDED Column Character.lock_item'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.lock_item' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='lock_item_code' )
+	BEGIN
+		Alter TABLE Character ADD lock_item_code varchar(50)
+		PRINT 'ADDED Column Character.lock_item_code'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.lock_item_code' END
