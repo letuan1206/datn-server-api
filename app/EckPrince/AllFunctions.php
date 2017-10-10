@@ -1,5 +1,7 @@
 <?php
+
 namespace App\EckPrince;
+
 /**
  * Created by PhpStorm.
  * User: hoang
@@ -7,12 +9,14 @@ namespace App\EckPrince;
  * Time: 4:06 PM
  */
 use Illuminate\Support\Facades\DB;
+
 class AllFunctions
 {
-    function writelog($file, $logcontent) {
+    function writelog($file, $logcontent)
+    {
         $Date = date("h:i:sA, d/m/Y");
         $fp = fopen($file, "a+");
-        fputs ($fp, "Lúc: $Date. $logcontent \n----------------------------------------------------------------------\n");
+        fputs($fp, "Lúc: $Date. $logcontent \n----------------------------------------------------------------------\n");
         fclose($fp);
     }
 
@@ -70,7 +74,7 @@ class AllFunctions
 
         $check_online = DB::table('MEMB_STAT')->select('ConnectStat')->where('memb___id', $memb___id)->first();
         if (count($check_online) > 0) {
-            return $check_online->ConnectStat;
+            return (int)$check_online->ConnectStat;
         } else {
             return 0;
         }
@@ -89,9 +93,9 @@ class AllFunctions
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'pass2')->where('memb___id', $memb___id)->where('pass2', $pass2)->first();
         if (count($check) > 0) {
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
     }
 
     function check_sliver($memb___id, $gcoin_need)
@@ -107,18 +111,18 @@ class AllFunctions
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'bank_sliver', 'bank_sliver_lock')->where('memb___id', $memb___id)->first();
         if (($check->bank_sliver + $check->bank_sliver_lock) < $gcoin_need) {
-            return true;
+            return 0;
         }
-        return false;
+        return 1;
     }
 
     function check_bank_zen($memb___id, $zen_need)
     {
         $check = DB::table('MEMB_INFO')->select('memb___id', 'bank_zen')->where('memb___id', $memb___id)->first();
         if ($check->bank_zen < $zen_need) {
-            return true;
+            return 0;
         }
-        return false;
+        return 1;
     }
 
     function get_reset_day($name)
@@ -169,10 +173,14 @@ class AllFunctions
     {
         foreach ($array as $item) {
             if ($item->item_seri === $seri) {
-                return true;
+                return 1;
             }
         }
+        return 0;
+    }
 
-        return false;
+    function check_duplicate_item_serial($listSerial)
+    {
+        return count($listSerial) === count(array_flip($listSerial));
     }
 }

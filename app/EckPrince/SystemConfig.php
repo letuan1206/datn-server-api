@@ -26,6 +26,11 @@ class SystemConfig
     const FEE_JEWEL_ACTION = 1000;
 
 // CONFIG CHARACTER CONTROLLER
+// ----- RESET SKILL MASTER
     const RESET_SKILL_MASTER_SLIVER = 500;
     const RESET_SKILL_MASTER_ZEN    = 10000000;
+// ----- CLEAR PK
+    const CLEAR_PK_ZEN = 10000000;
+    const CLEAR_PK_SLIVER = 500;
+    const CLEAR_PK_COUNT = 100;
 }

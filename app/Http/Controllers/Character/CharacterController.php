@@ -27,6 +27,7 @@ class CharacterController extends Controller
                                [Name]
                               ,[cLevel]
                               ,[LevelUpPoint]
+                              ,[Point_Reserve]
                               ,[Class]
                               ,[Experience]
                               ,[Strength]
@@ -48,7 +49,7 @@ class CharacterController extends Controller
                               ,[SCFMasterPoints]
                               ,[SCFMarried]
                               ,[SCFMarryHusbandWife]
-                              ,[khoado]
+                              ,[Lock_Item]
                               ,[UyThac]
                               ,[PointUyThac]
                               ,[Top50]
@@ -95,7 +96,7 @@ class CharacterController extends Controller
     {
         $apiFormat = array();
 
-        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2) === 0) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
@@ -123,19 +124,19 @@ class CharacterController extends Controller
     {
         $apiFormat = array();
 
-        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2) === 0) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
         }
 
-        if ($this->dependence->check_bank_sliver_and_sliver_lock($request->account, SystemConfig::RESET_SKILL_MASTER_SLIVER)) {
+        if ($this->dependence->check_bank_sliver_and_sliver_lock($request->account, SystemConfig::RESET_SKILL_MASTER_SLIVER) === 0) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Không đủ Bạc!';
             return response()->json($apiFormat);
         }
 
-        if ($this->dependence->check_bank_zen($request->account, SystemConfig::RESET_SKILL_MASTER_ZEN / 1000000)) {
+        if ($this->dependence->check_bank_zen($request->account, SystemConfig::RESET_SKILL_MASTER_ZEN / 1000000) === 0) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Ngân hàng không đủ ZEN!';
             return response()->json($apiFormat);
@@ -257,13 +258,13 @@ class CharacterController extends Controller
     {
         $apiFormat = array();
 
-        if ($this->dependence->check_pass2($request->account, $request->pass2)) {
+        if ($this->dependence->check_pass2($request->account, $request->pass2) === 0) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
             $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
             return response()->json($apiFormat);
         }
 
-        $char = Character::select('LevelUpPoint', 'Strength', 'Dexterity', 'Vitality', 'Energy', 'pointdutru', 'Class')
+        $char = Character::select('LevelUpPoint', 'Strength', 'Dexterity', 'Vitality', 'Energy', 'Point_Reserve', 'Class')
             ->where('Name', $request->name)->first();
 
         $LevelUpPoint = $char->LevelUpPoint;
@@ -285,7 +286,7 @@ class CharacterController extends Controller
             $Energy = $Energy + 65536;
         }
 
-        $pointdutru = $char->pointdutru;
+        $point_reserve = $char->Point_Reserve;
         $ClassType = $char->Class;
 
         switch ($ClassType) {
@@ -358,17 +359,21 @@ class CharacterController extends Controller
         }
 
         if ($LevelUpPoint > 65000) {
-            $pointup = 65000;
-            $pointdutru = $pointdutru + ($LevelUpPoint - 65000);
+            $point_up = 65000;
+            $point_reserve = $point_reserve + ($LevelUpPoint - 65000);
         } else {
-            $pointup = $LevelUpPoint;
+            $point_up = $LevelUpPoint;
         }
 
-        $char_update_query = DB::update("UPDATE Character SET LevelUpPoint = ?, Strength = ?, Dexterity = ?, Vitality = ?, Energy = ?, pointdutru=? WHERE Name=?",
-            [$pointup, $Strength, $Dexterity, $Vitality, $Energy, $pointdutru, $request->name]);
+        DB::update("UPDATE Character SET LevelUpPoint = ?, Strength = ?, Dexterity = ?, Vitality = ?, Energy = ?, point_reserve=? WHERE Name=?",
+            [$point_up, $Strength, $Dexterity, $Vitality, $Energy, $point_reserve, $request->name]);
+
+        $result['LevelUpPoint'] = $point_up;
+        $result['pointdutru'] = $point_reserve;
 
         $apiFormat['status'] = Constains::RESPONSE_STATUS_OK;
         $apiFormat['message'] = "Tẩy điểm cho nhân vât " . $request->name . ' thành công!!';
+        $apiFormat['data'] = $result;
         return response()->json($apiFormat);
     }
 
@@ -387,14 +392,14 @@ class CharacterController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'key_lock' => 'required',
-            're_key_lock' => 'required|same:key_lock',
+            'keyLock' => 'required',
+            'reKeyLock' => 'required|same:keyLock',
         ],
             [
                 'name.required' => 'Tên nhân vật không được rỗng',
-                'key_lock.required' => 'Chưa nhập mã khóa đồ',
-                're_key_lock.required' => 'Chưa nhập mã khóa đồ',
-                're_key_lock.same' => 'Mã nhập lại không khớp',
+                'keyLock.required' => 'Chưa nhập mã khóa đồ',
+                'reKeyLock.required' => 'Chưa nhập mã khóa đồ',
+                'reKeyLock.same' => 'Mã nhập lại không khớp',
             ]);
 
         if ($validator->fails()) {
@@ -414,14 +419,14 @@ class CharacterController extends Controller
 
         $is_lock_item = $query->lock_item;
 
-        if ($request->option == 0) {
+        if ($request->actionType == 0) {
 
             if ($is_lock_item == 1) {
                 $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
                 $apiFormat['message'] = "$request->name đã khóa đồ!";
                 return response()->json($apiFormat);
             } else {
-                DB::update("UPDATE Character SET lock_item=1, lock_item_code=?, CtlCode = 18 WHERE Name = ? AND AccountID = ?", [$request->key_lock, $request->name, $request->account]);
+                DB::update("UPDATE Character SET lock_item=1, lock_item_code=?, CtlCode = 18 WHERE Name = ? AND AccountID = ?", [$request->keyLock, $request->name, $request->account]);
                 $apiFormat['status'] = Constains::RESPONSE_STATUS_OK;
                 $apiFormat['message'] = "$request->name khóa đồ thành công!";
                 return response()->json($apiFormat);
@@ -432,7 +437,7 @@ class CharacterController extends Controller
                 $apiFormat['message'] = "$request->name không khóa đồ!";
                 return response()->json($apiFormat);
             } else {
-                if (strcmp($request->key_lock, $query->lock_item_code) != 0) {
+                if (strcmp($request->keyLock, $query->lock_item_code) != 0) {
                     $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
                     $apiFormat['message'] = "$request->name mã khóa không đúng!";
                     return response()->json($apiFormat);
@@ -444,5 +449,64 @@ class CharacterController extends Controller
                 return response()->json($apiFormat);
             }
         }
+    }
+
+    public function clearPK(Request $request)
+    {
+        $apiFormat = array();
+
+        $name = $request->name;
+        $memb___id = $request->account;
+
+        $char = Character::select('PkLevel', 'PkCount', 'Money')->where('PkCount', '>', 0)->where('Name', $name)->first();
+
+        if (count($char) <= 0) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = 'Bạn không phải là sát thủ';
+            return response()->json($apiFormat);
+        }
+
+        if ($char->PkCount <= SystemConfig::CLEAR_PK_COUNT) {
+            $zen_need = $char->PkCount * SystemConfig::CLEAR_PK_ZEN;
+            $sliver_need = 0;
+        } else {
+            $zen_need = 0;
+            $sliver_need = $char->PkCount * SystemConfig::CLEAR_PK_SLIVER;
+        }
+
+        $acc = Memb_Info::select('bank_sliver', 'bank_sliver_lock')->where('memb___id', $memb___id)->first();
+
+        if ($char->Money < $zen_need) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = "Nhân vật của bạn không đủ ZEN. Cần " . number_format($zen_need, 0, ",", ".") . " ZEN";
+            return response()->json($apiFormat);
+        }
+
+        if (($acc->bank_sliver + $acc->bank_sliver_lock) < $sliver_need) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = "Bạn không đủ Bạc. Cần " . number_format($sliver_need, 0, ",", ".") . " Bạc";
+            return response()->json($apiFormat);
+        }
+
+        $money_after = $char->Money - $zen_need;
+
+        if ($zen_need > 0) {
+            DB::update("UPDATE Character SET PkLevel = 3, PkTime = 0, PkCount = 0, Money = ? WHERE AccountID = ? AND Name = ?", [$money_after, $memb___id, $name]);
+        }
+
+        if ($sliver_need > 0) {
+            DB::update("UPDATE Character SET PkLevel = 3, PkTime = 0, PkCount = 0 WHERE AccountID = ? AND Name = ?", [$memb___id, $name]);
+
+            if ($acc->bank_sliver_lock > $sliver_need) {
+                DB::update("UPDATE MEMB_INFO SET bank_sliver_lock = ? WHERE memb___id = ?", [$acc->bank_sliver_lock - $sliver_need, $memb___id]);
+            } else {
+                DB::update("UPDATE MEMB_INFO SET bank_sliver = ?, bank_sliver_lock = 0 WHERE memb___id = ?", [$acc->bank_sliver - ($sliver_need - $acc->bank_sliver_lock), $memb___id]);
+            }
+        }
+
+        $apiFormat['status'] = Constains::RESPONSE_STATUS_OK;
+        $apiFormat['message'] = $request->name . ' rửa tội thành công';
+        return response()->json($apiFormat);
+
     }
 }

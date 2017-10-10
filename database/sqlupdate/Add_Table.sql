@@ -48,3 +48,27 @@ CREATE TABLE [dbo].[BK_Event_CheckIn](
 
 ALTER TABLE [dbo].[BK_Event_CheckIn] ADD  CONSTRAINT [DF_BK_Event_CheckIn_day_check]  DEFAULT ((0)) FOR [day_check]
 GO
+
+CREATE TABLE [dbo].[BK_Super_Market](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[account] [varchar](10) NOT NULL,
+	[name] [varchar](10) NULL,
+	[code] [varchar](10) NULL,
+	[item_code] [nvarchar](50) NOT NULL,
+	[item_type] [tinyint] NOT NULL,
+	[item_price] [int] NOT NULL,
+	[time_up] [datetime] NOT NULL,
+	[dw] [tinyint] NOT NULL,
+	[dk] [tinyint] NOT NULL,
+	[elf] [tinyint] NOT NULL,
+	[mg] [tinyint] NOT NULL,
+	[dl] [tinyint] NOT NULL,
+	[sum] [tinyint] NOT NULL,
+	[rf] [tinyint] NOT NULL,
+	[status] [tinyint] NOT NULL,
+	[account_buy] [varchar](10) NULL,
+	CONSTRAINT [PK_BK_Super_Market] PRIMARY KEY CLUSTERED
+		(
+			[id] ASC
+		)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]

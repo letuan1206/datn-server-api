@@ -46,3 +46,10 @@ IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Chara
 		PRINT 'ADDED Column Character.lock_item_code'
 	END
 ELSE BEGIN PRINT 'Exist Column Character.lock_item_code' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='point_reserve' )
+	BEGIN
+		Alter TABLE Character ADD point_reserve int NOT NULL DEFAULT 0
+		PRINT 'ADDED Column Character.point_reserve'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.point_reserve' END

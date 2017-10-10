@@ -24,6 +24,16 @@ Route::group(['prefix' => 'account'], function () {
     Route::post('/changeAccountInfoUseSMS', ['uses' => 'Account\AccountController@changeAccountInfoUseSMS']);
 });
 
+Route::group(['prefix' => 'character'], function () {
+    Route::post('/deleteInventory', ['uses' => 'Character\CharacterController@deleteInventory']);
+    Route::post('/addPoint', ['uses' => 'Character\CharacterController@addPoint']);
+    Route::post('/resetPoint', ['uses' => 'Character\CharacterController@resetPoint']);
+    Route::post('/resetSkillMaster', ['uses' => 'Character\CharacterController@resetSkillMaster']);
+    Route::post('/lockItem', ['uses' => 'Character\CharacterController@lockItem']);
+    Route::post('/clearPK', ['uses' => 'Character\CharacterController@clearPK']);
+    Route::post('/moveLorencia', ['uses' => 'Character\CharacterController@moveLorencia']);
+});
+
 Route::group(['prefix' => 'bank'], function () {
     Route::get('/getBankInfo', ['uses' => 'Bank\BankController@getBankInfo']);
     Route::post('/bankTransfer', ['uses' => 'Bank\BankController@bankTransfer']);
@@ -36,4 +46,9 @@ Route::group(['prefix' => 'bank'], function () {
 Route::group(['prefix' => 'event'], function () {
     Route::post('/checkInEventList', ['uses' => 'Event\EventController@getEventList']);
     Route::post('/addCheckIn', ['uses' => 'Event\EventController@addCheckIn']);
+});
+
+Route::group(['prefix' => 'webshop'], function () {
+    Route::post('/getItemWareHouseList', ['uses' => 'Account\WebShopController@getItemWareHouseList']);
+    Route::post('/addItemToSuperMarket', ['uses' => 'Account\WebShopController@addItemToSuperMarket']);
 });

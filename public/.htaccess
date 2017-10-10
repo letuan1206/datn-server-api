@@ -17,4 +17,9 @@
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+     SetEnvIf Origin "http(s)?://(www\.)?(127.0.0.1:8080|localhost:8080|localhost:5556|localhost:61167|localhost:4400|localhost)$" AccessControlAllowOrigin=$0
+            Header add Access-Control-Allow-Origin %{AccessControlAllowOrigin}e env=AccessControlAllowOrigin
+        	Header set Access-Control-Allow-Credentials true
+        	Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, LOGIN-TOKEN, Accept"
 </IfModule>

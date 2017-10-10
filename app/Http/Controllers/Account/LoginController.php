@@ -44,13 +44,13 @@ class LoginController extends Controller
 
         $user = Memb_Info::select('memb___id',
             'memb_name',
-            'bank_sliver',
-            'bank_sliver_lock',
-            'bank_zen',
-            'wcoin',
-            'wcoinp',
-            'bank_jewel',
-            'bank_jewel_lock',
+//            'bank_sliver',
+//            'bank_sliver_lock',
+//            'bank_zen',
+//            'wcoin',
+//            'wcoinp',
+//            'bank_jewel',
+//            'bank_jewel_lock',
             DB::raw('LEFT(mail_addr, 5) as mail_addr, RIGHT(tel__numb, 4) as tel__numb, LEFT(sno__numb, 3) as sno__numb'))
             ->where('memb___id', $request->account)
             ->where('memb__pwd', $request->pass)->first();
