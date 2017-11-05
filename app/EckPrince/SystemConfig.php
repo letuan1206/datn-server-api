@@ -33,4 +33,6 @@ class SystemConfig
     const CLEAR_PK_ZEN = 10000000;
     const CLEAR_PK_SLIVER = 500;
     const CLEAR_PK_COUNT = 100;
+// ----- CONFIG RESET
+    const LEVEL_AFTER_RESET = 6;
 }

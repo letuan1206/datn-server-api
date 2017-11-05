@@ -24,4 +24,9 @@ class Constains
     const SMS_STATUS_PENDING = 0;
     const SMS_STATUS_ACTIVE = 1;
 
+    const RESET_TYPE = [
+        "NORMAL" => 1,
+        "VIP" => 2
+    ];
+
 }

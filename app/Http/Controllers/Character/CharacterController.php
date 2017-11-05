@@ -50,12 +50,10 @@ class CharacterController extends Controller
                               ,[SCFMarried]
                               ,[SCFMarryHusbandWife]
                               ,[Lock_Item]
-                              ,[UyThac]
-                              ,[PointUyThac]
-                              ,[Top50]
                               ,[SCFSealItem]
                               ,[SCFSealTime]
                               ,[MDate]
+                              ,[Top_0h]
                               ')
             ->where('AccountID', $request->memb___id)
             ->orderBy('Relifes', 'desc')
@@ -67,8 +65,10 @@ class CharacterController extends Controller
             $status_online = $check_online->ConnectStat;
         }
 
+        $list_ghrs = DB::table('BK_Config_Limit_Reset')->get();
         $check_select_char = DB::table('AccountCharacter')->select('GameIDC')->where('Id', $request->memb___id)->first();
-
+        $char_top_1 = Character::selectRaw('[Name],[cLevel],[Resets],[Relifes],[Top_0h]')->where('Top_0h', 1)->first();
+        $list_relife = DB::table('BK_Config_Relife')->get();
         $data = array();
         foreach ($listChar as $char) {
             $char['online'] = $status_online;
@@ -78,9 +78,10 @@ class CharacterController extends Controller
             } else {
                 $char['doinv'] = 1;
             }
-
-            $char['reset_day'] = 0; //get_reset_day($char['Name']);
-
+            $char['SCFSealTime'] = date('d/m/Y H:i:s', $char['SCFSealTime']);
+            $char['Reset_Day'] = $this->dependence->get_reset_day($request->memb___id, $char['Name']);
+            $char['Reset_Month'] = $this->dependence->get_reset_month($request->memb___id, $char['Name']);
+            $char['Reset_Limit'] = $this->dependence->calculateLimitReset($char, $list_ghrs, $list_relife, $char_top_1);
             array_push($data, $char);
         }
 
@@ -509,4 +510,10 @@ class CharacterController extends Controller
         return response()->json($apiFormat);
 
     }
+
+    public function changeSex(Request $request) {
+
+    }
+
+
 }

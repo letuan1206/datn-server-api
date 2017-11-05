@@ -53,3 +53,24 @@ IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Chara
 		PRINT 'ADDED Column Character.point_reserve'
 	END
 ELSE BEGIN PRINT 'Exist Column Character.point_reserve' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='top_0h' )
+	BEGIN
+		Alter TABLE Character ADD top_0h int NOT NULL DEFAULT 0
+		PRINT 'ADDED Column Character.top_0h'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.top_0h' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='point_reset' )
+	BEGIN
+		Alter TABLE Character ADD point_reset int NOT NULL DEFAULT 0
+		PRINT 'ADDED Column Character.point_reset'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.point_reset' END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='Character' AND COLUMN_NAME='reset_time' )
+	BEGIN
+		Alter TABLE Character ADD reset_time int NOT NULL DEFAULT 0
+		PRINT 'ADDED Column Character.reset_time'
+	END
+ELSE BEGIN PRINT 'Exist Column Character.reset_time' END

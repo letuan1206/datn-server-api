@@ -125,26 +125,26 @@ class AllFunctions
         return 1;
     }
 
-    function get_reset_day($name)
+    function get_reset_day($account, $name)
     {
-        $day = date('d', time());
-        $month = date('m', time());
-        $year = date('Y', time());
+        $reset_in_day = DB::table('Log_Resets')
+            ->whereDate('reset_time', date('Y-m-d H:i:s', time()))
+            ->where('account', $account)
+            ->where('name', $name)
+            ->get();
 
-        $list = DB::table('TopReset')->select('name', 'reset')
-            ->where('day', $day)
-            ->where('month', $month)
-            ->where('year', $year)
-            ->where('name', $name)->get();
+        return count($reset_in_day);
+    }
 
-        $reset_day = 0;
-        if (count($list) > 0) {
-            foreach ($list as $item) {
-                $reset_day += $item->reset;
-            }
-        }
+    function get_reset_month($account, $name)
+    {
+        $reset_in_day = DB::table('Log_Resets')
+            ->whereMonth('reset_time', date('m', time()))
+            ->where('account', $account)
+            ->where('name', $name)
+            ->get();
 
-        return $reset_day;
+        return count($reset_in_day);
     }
 
     function getItemSerial()
@@ -182,5 +182,75 @@ class AllFunctions
     function check_duplicate_item_serial($listSerial)
     {
         return count($listSerial) === count(array_flip($listSerial));
+    }
+
+    /**
+     * @param $char_top
+     * @param $list_ghrs
+     * @param $list_relife
+     * @param $char_top_1
+     * @return int
+     */
+    function calculateLimitReset($char_top, $list_ghrs, $list_relife, $char_top_1){
+        $get_day = date('w', time());
+        $reset_limit_top_1 = $list_ghrs[0]->max_reset_in_day;
+        if ($char_top['Top_0h'] == 1) {
+            $arr = $list_ghrs[0];
+        } else if($char_top['Top_0h'] == 0) {
+            $arr = $list_ghrs[count($list_ghrs) - 1];
+        } else {
+            for($i = count($list_ghrs) - 1; $i >= 0 ; $i--) {
+                if ($char_top['Top_0h'] > $list_ghrs[$i]->reset_top) {
+                    $arr = $list_ghrs[$i];
+                }
+            }
+        }
+        $reset_limit = 0;
+        if(isset($arr)) {
+            if ($char_top['Top_0h'] == 1) {
+                $reset_limit = $arr->max_reset_in_day;
+            } else {
+                $reset_top_1 = $char_top_1->Resets;
+
+                for ($i = 0; $i < $char_top_1->Relifes; $i++) {
+                    $reset_top_1 += $list_relife[$i]->reset;
+                }
+
+                $reset_char = $char_top['Resets'];
+                for ($i = 0; $i < $char_top['Relifes']; $i++) {
+                    $reset_char += $list_relife[$i]->reset;
+                }
+                $reset_limit = $reset_top_1 - $reset_char;
+
+                if ($reset_limit > $arr->max_reset_in_day) {
+                    $reset_limit = $arr->max_reset_in_day;
+                }
+            }
+
+            if($get_day == 6) {
+                $reset_limit_top_1 = $reset_limit_top_1 + floor($reset_limit_top_1 * $arr->percent_saturday / 100);
+                $reset_limit = $reset_limit + floor($reset_limit * $arr->percent_saturday / 100);
+            } else if($get_day == 0) {
+                $reset_limit_top_1 = $reset_limit_top_1 + floor($reset_limit_top_1 * $arr->percent_sunday / 100);
+                $reset_limit = $reset_limit + floor($reset_limit * $arr->percent_sunday / 100);
+            }
+
+            if ($arr->distance_top_day_reset > 0) {
+                $reset_limit = $reset_limit - $reset_limit_top_1 * $arr->distance_top_day_reset;
+            }
+        }
+
+        return (int)$reset_limit;
+    }
+
+    function calResetConfigInfo($char, $list_ghrs) {
+        $num_ghrs = count($list_ghrs);
+        $reset_info = 0;
+        for($i = 0; $i < $num_ghrs; $i++) {
+            if($char->Resets > $list_ghrs[$i]->reset) {
+                $reset_info =  $list_ghrs[$i];
+            }
+        }
+        return $reset_info;
     }
 }
