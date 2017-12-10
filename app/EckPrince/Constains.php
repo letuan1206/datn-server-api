@@ -26,7 +26,21 @@ class Constains
 
     const RESET_TYPE = [
         "NORMAL" => 1,
-        "VIP" => 2
+        "VIP" => 2,
+        "VIP_PO" => 3
+    ];
+//{ type: 1, description: "Log Chung" },
+//    { type: 2, description: "Log SMS" },
+//    { type: 3, description: "Log Resets" },
+//    { type: 4, description: "Log Nạp Thẻ" }
+    const LOG_TYPE = [
+        "ALL" => 1,
+        "SMS" => 2,
+        "RESET" => 3,
+        "CARD" => 4
     ];
 
+    const CARD_PENDING = 0;
+    const CARD_SUCCESS = 1;
+    const CARD_ERROR = 2;
 }

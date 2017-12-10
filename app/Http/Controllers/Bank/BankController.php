@@ -25,7 +25,7 @@ class BankController extends Controller
     public function getBankInfo(Request $request)
     {
         $bank = Memb_Info::select('memb___id', 'bank_sliver', 'bank_sliver_lock', 'bank_zen', 'bank_jewel', 'bank_jewel_lock',
-            'wcoin', 'wcoinp', 'GoblinCoin', 'jewel_chao', 'jewel_cre', 'jewel_blue', 'jewel_heart')
+            'wcoin', 'wcoinp', 'GoblinCoin', 'jewel_chao', 'jewel_cre', 'jewel_blue', 'jewel_heart', 'point_online', 'point_bonus', 'SCFVipDays')
             ->where('memb___id', $request->get('account'))
             ->first();
 

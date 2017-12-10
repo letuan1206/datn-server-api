@@ -173,3 +173,19 @@ CREATE TABLE [dbo].[Log_Resets](
 			[id] ASC
 		)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY]
+
+CREATE TABLE [dbo].[BK_Card_Phones](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[account] [varchar](10) NOT NULL,
+	[card_seri] [varchar](50) NOT NULL,
+	[card_code] [varchar](50) NOT NULL,
+	[card_type] [varchar](50) NOT NULL,
+	[card_value] [varchar](50) NULL,
+	[status] [int] NOT NULL,
+	[created_at] [datetime] NOT NULL,
+	[updated_at] [datetime] NOT NULL,
+	CONSTRAINT [PK_BK_Card_Phones] PRIMARY KEY CLUSTERED
+		(
+			[id] ASC
+		)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]

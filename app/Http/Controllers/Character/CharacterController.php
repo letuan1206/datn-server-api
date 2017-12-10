@@ -55,18 +55,18 @@ class CharacterController extends Controller
                               ,[MDate]
                               ,[Top_0h]
                               ')
-            ->where('AccountID', $request->memb___id)
+            ->where('AccountID', $request->account)
             ->orderBy('Relifes', 'desc')
             ->orderBy('Resets', 'desc')->get()->toArray();
 
         $status_online = 0;
-        $check_online = DB::table('MEMB_STAT')->select('ConnectStat')->where('memb___id', $request->memb___id)->first();
+        $check_online = DB::table('MEMB_STAT')->select('ConnectStat')->where('memb___id', $request->account)->first();
         if (count($check_online) > 0) {
             $status_online = $check_online->ConnectStat;
         }
 
         $list_ghrs = DB::table('BK_Config_Limit_Reset')->get();
-        $check_select_char = DB::table('AccountCharacter')->select('GameIDC')->where('Id', $request->memb___id)->first();
+        $check_select_char = DB::table('AccountCharacter')->select('GameIDC')->where('Id', $request->account)->first();
         $char_top_1 = Character::selectRaw('[Name],[cLevel],[Resets],[Relifes],[Top_0h]')->where('Top_0h', 1)->first();
         $list_relife = DB::table('BK_Config_Relife')->get();
         $data = array();
@@ -79,8 +79,8 @@ class CharacterController extends Controller
                 $char['doinv'] = 1;
             }
             $char['SCFSealTime'] = date('d/m/Y H:i:s', $char['SCFSealTime']);
-            $char['Reset_Day'] = $this->dependence->get_reset_day($request->memb___id, $char['Name']);
-            $char['Reset_Month'] = $this->dependence->get_reset_month($request->memb___id, $char['Name']);
+            $char['Reset_Day'] = $this->dependence->get_reset_day($request->account, $char['Name']);
+            $char['Reset_Month'] = $this->dependence->get_reset_month($request->account, $char['Name']);
             $char['Reset_Limit'] = $this->dependence->calculateLimitReset($char, $list_ghrs, $list_relife, $char_top_1);
             array_push($data, $char);
         }
@@ -157,10 +157,9 @@ class CharacterController extends Controller
             $sliver_after = $user->bank_sliver;
             $bank_zen_after = $user->bank_zen - (SystemConfig::RESET_SKILL_MASTER_ZEN / 1000000);
 
-            if ($user->bank_sliver_lock >= SystemConfig::RESET_SKILL_MASTER_SLIVER){
+            if ($user->bank_sliver_lock >= SystemConfig::RESET_SKILL_MASTER_SLIVER) {
                 $sliver_lock_after = $user->bank_sliver_lock - SystemConfig::RESET_SKILL_MASTER_SLIVER;
-            }
-            else {
+            } else {
                 $sliver_after = $user->bank_sliver - (SystemConfig::RESET_SKILL_MASTER_SLIVER - $user->bank_sliver_lock);
                 $sliver_lock_after = 0;
             }
@@ -359,12 +358,12 @@ class CharacterController extends Controller
             return response()->json($apiFormat);
         }
 
-        if ($LevelUpPoint > 65000) {
-            $point_up = 65000;
-            $point_reserve = $point_reserve + ($LevelUpPoint - 65000);
-        } else {
-            $point_up = $LevelUpPoint;
-        }
+//        if ($LevelUpPoint > 65000) {
+//            $point_up = 65000;
+//            $point_reserve = $point_reserve + ($LevelUpPoint - 65000);
+//        } else {
+        $point_up = $LevelUpPoint;
+//        }
 
         DB::update("UPDATE Character SET LevelUpPoint = ?, Strength = ?, Dexterity = ?, Vitality = ?, Energy = ?, point_reserve=? WHERE Name=?",
             [$point_up, $Strength, $Dexterity, $Vitality, $Energy, $point_reserve, $request->name]);
@@ -511,8 +510,83 @@ class CharacterController extends Controller
 
     }
 
-    public function changeSex(Request $request) {
+    public function changeClass(Request $request)
+    {
+        $apiFormat = array();
 
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'pass2' => 'required',
+            'classType' => 'required|numeric',
+        ],
+            [
+                'name.required' => 'Tên nhân vật không được rỗng',
+                'pass2.required' => 'Vui lòng điền mật khẩu cấp 2',
+                'classType.required' => 'Chưa chọn giới tính cần đổi'
+            ]);
+
+        if ($validator->fails()) {
+            $message = $validator->errors()->first();
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = $message;
+            return response()->json($apiFormat);
+        }
+
+        if ($this->dependence->check_pass2($request->account, $request->pass2) === 0) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = 'Mật khẩu cấp 2 không đúng!';
+            return response()->json($apiFormat);
+        }
+
+        if ($this->dependence->check_sliver($request->account, SystemConfig::CHANGE_CLASS_SLIVER) === 0) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = 'Không đủ Bạc!';
+            return response()->json($apiFormat);
+        }
+
+        $char_info = Character::select('Name', 'cLevel', 'Class', 'Resets', 'Relifes', 'Top_0h')
+            ->where('AccountID', $request->account)
+            ->where('Name', $request->name)
+            ->first();
+
+        $class_default = $this->dependence->getClassDefault($char_info->Class);
+        if ($class_default == (int)$request->classType) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = 'Giới tính muốn đổi trùng với giới tính hiện tại.';
+            return response()->json($apiFormat);
+        }
+
+        $inventory_query = Character::selectRaw('Inventory')->where('AccountID', $request->account)
+            ->where('Name', $request->name)->first();
+
+        $inventory = $inventory_query->Inventory;
+//        $inventory = bin2hex($inventory);
+        $inventory = strtoupper($inventory);
+        $inventory1 = substr($inventory, 0, 12 * 32);
+
+        $inventory1_fresh = "";
+        for ($i = 0; $i < strlen($inventory1); $i++) {
+            $inventory1_fresh .= "F";
+        }
+
+        if ($inventory1 != $inventory1_fresh) {
+            $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
+            $apiFormat['message'] = 'Bạn chưa cất hết đồ trên người nhân vật';
+            return response()->json($apiFormat);
+        }
+
+        $no_quest = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+
+        DB::update("UPDATE Character SET Class=?, MagicList=CONVERT(varbinary(180), null), Quest=0x" . $no_quest . ", Change_Class_Time=? WHERE Name = ?", [
+            $request->classType, time(), $request->name]);
+        DB::update("UPDATE MEMB_INFO SET bank_sliver=bank_sliver - ?  WHERE memb___id = ?", [SystemConfig::CHANGE_CLASS_SLIVER, $request->account]);
+
+        $class_before = $this->dependence->getClassName($char_info->Class);
+        $class_after = $this->dependence->getClassName($request->classType);
+
+        $apiFormat['status'] = Constains::RESPONSE_STATUS_OK;
+        $apiFormat['message'] = "Nhân vật $request->name đã đổi giới tính từ $class_before sang $class_after thành công!";
+        return response()->json($apiFormat);
     }
 
 

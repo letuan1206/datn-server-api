@@ -64,7 +64,7 @@ class AccountController extends Controller
                         case Constains::SMS_TYPE['PASS1']:
                         case Constains::SMS_TYPE['FORGOT_PASS']:
                             $msg = "Tai khoan: $check_sms->account doi mat khau cap 1 thanh $check_sms->info_change";
-                            DB::update('update MEMB_INFO set memb__pwd = ?, checklogin = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
+                            DB::update('update MEMB_INFO set memb__pwd = ?, login_token = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['PASS2']:
                             $msg = "Tai khoan: $check_sms->account doi mat khau cap 2 thanh $check_sms->info_change";
@@ -76,7 +76,7 @@ class AccountController extends Controller
                             break;
                         case Constains::SMS_TYPE['PHONE_NUMBER']:
                             $msg = "Tai khoan: $check_sms->account doi so dien thoai thanh $check_sms->info_change";
-                            DB::update('update MEMB_INFO set tel__numb = ?, checklogin = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
+                            DB::update('update MEMB_INFO set tel__numb = ?, login_token = ? where memb___id = ?', [$check_sms->info_change, $login_token, $check_sms->account]);
                             break;
                         case Constains::SMS_TYPE['EMAIL']:
                             $msg = "Tai khoan: $check_sms->account doi email thanh $check_sms->info_change";

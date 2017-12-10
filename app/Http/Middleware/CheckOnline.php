@@ -2,12 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\EckPrince\AllFunctions;
 use App\EckPrince\Constains;
 use Closure;
-use Illuminate\Support\Facades\DB;
 
-class CheckLoginToken
+class CheckOnline
 {
+    private $dependence;
+
+    public function __construct(AllFunctions $functions)
+    {
+        $this->dependence = $functions;
+    }
     /**
      * Handle an incoming request.
      *
@@ -17,11 +23,10 @@ class CheckLoginToken
      */
     public function handle($request, Closure $next)
     {
-        $login_token = DB::table('MEMB_INFO')->select('login_token')->where('memb___id', $request->account)->first();
-
-        if (strcmp($login_token->login_token, $request->header('LOGIN-TOKEN')) != 0) {
+        $check_online = $this->dependence->check_online($request->account);
+        if ($check_online == 1) {
             $apiFormat['status'] = Constains::RESPONSE_STATUS_ERROR;
-            $apiFormat['message'] = 'Bạn đã đăng nhập ở một nơi khác!';
+            $apiFormat['message'] = 'Bạn chưa thoát game!';
             return response()->json($apiFormat);
         }
 

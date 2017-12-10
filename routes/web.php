@@ -16,8 +16,8 @@ Route::get('/', function () {
 });
 
 Route::post('/register', ['uses' => 'Account\RegisterController@register']);
-Route::post('/login', ['uses' => 'Account\LoginController@login'])->middleware('checkAction');;
-Route::post('/getInfoCharacter', ['uses' => 'Character\CharacterController@getInfoCharacter']);
+Route::post('/login', ['uses' => 'Account\LoginController@login'])->middleware('checkAction');
+Route::post('/getInfoCharacter', ['uses' => 'Character\CharacterController@getInfoCharacter'])->middleware('checkLoginToken');
 Route::get('/getSMSService', ['uses' => 'Account\AccountController@getSMSService']);
 Route::get('/getResetInfo', ['uses' => 'Character\ResetController@getResetInfo']);
 
@@ -25,7 +25,7 @@ Route::group(['prefix' => 'account'], function () {
     Route::post('/changeAccountInfoUseSMS', ['uses' => 'Account\AccountController@changeAccountInfoUseSMS']);
 });
 
-Route::group(['prefix' => 'character', 'middleware' => ['checkAction']], function () {
+Route::group(['prefix' => 'character', 'middleware' => ['checkAction', 'checkLoginToken', 'checkOnline', 'checkSelectChar']], function () {
     Route::post('/deleteInventory', ['uses' => 'Character\CharacterController@deleteInventory']);
     Route::post('/addPoint', ['uses' => 'Character\CharacterController@addPoint']);
     Route::post('/resetPoint', ['uses' => 'Character\CharacterController@resetPoint']);
@@ -33,37 +33,57 @@ Route::group(['prefix' => 'character', 'middleware' => ['checkAction']], functio
     Route::post('/lockItem', ['uses' => 'Character\CharacterController@lockItem']);
     Route::post('/clearPK', ['uses' => 'Character\CharacterController@clearPK']);
     Route::post('/moveLorencia', ['uses' => 'Character\CharacterController@moveLorencia']);
-//    Route::post('/resetCharacter', ['uses' => 'Character\ResetController@resetCharacter']);
+    Route::post('/changeClass', ['uses' => 'Character\CharacterController@changeClass']);
     Route::post('/reset', ['uses' => 'Character\ResetController@resetCharacter']);
+    Route::post('/resetVIP', ['uses' => 'Character\ResetController@resetVipCharacter']);
+    Route::post('/resetPO', ['uses' => 'Character\ResetController@resetVipPOCharacter']);
 });
 
-Route::group(['prefix' => 'bank'], function () {
+Route::group(['prefix' => 'bank', 'middleware' => ['checkLoginToken']], function () {
     Route::get('/getBankInfo', ['uses' => 'Bank\BankController@getBankInfo']);
     Route::post('/bankTransfer', ['uses' => 'Bank\BankController@bankTransfer']);
-    Route::post('/changeMoney', ['uses' => 'Bank\BankController@changeMoney']);
-    Route::post('/buyItemSliver', ['uses' => 'Bank\BankController@buyItemSliver']);
-    Route::post('/sellItemSliver', ['uses' => 'Bank\BankController@sellItemSliver']);
-    Route::post('/jewelAction', ['uses' => 'Bank\BankController@jewelAction']);
+    Route::post('/changeMoney', ['uses' => 'Bank\BankController@changeMoney'])->middleware('checkOnline');
+    Route::post('/buyItemSliver', ['uses' => 'Bank\BankController@buyItemSliver'])->middleware('checkOnline');
+    Route::post('/sellItemSliver', ['uses' => 'Bank\BankController@sellItemSliver'])->middleware('checkOnline');
+    Route::post('/jewelAction', ['uses' => 'Bank\BankController@jewelAction'])->middleware(['checkOnline', 'checkSelectChar']);
 });
 
-Route::group(['prefix' => 'event'], function () {
+Route::group(['prefix' => 'event', 'middleware' => ['checkLoginToken']], function () {
     Route::post('/checkInEventList', ['uses' => 'Event\EventController@getEventList']);
     Route::post('/addCheckIn', ['uses' => 'Event\EventController@addCheckIn']);
 });
 
-Route::group(['prefix' => 'webshop'], function () {
+Route::group(['prefix' => 'webshop', 'middleware' => ['checkLoginToken']], function () {
     Route::post('/getItemWareHouseList', ['uses' => 'Account\WebShopController@getItemWareHouseList']);
-    Route::post('/addItemToSuperMarket', ['uses' => 'Account\WebShopController@addItemToSuperMarket']);
+    Route::post('/addItemToSuperMarket', ['uses' => 'Account\WebShopController@addItemToSuperMarket'])->middleware('checkOnline');
     Route::post('/getItemInSuperMarketList', ['uses' => 'Account\WebShopController@getItemInSuperMarketList']);
-    Route::post('/buyItemSuperMarket', ['uses' => 'Account\WebShopController@buyItemInSuperMarket']);
+    Route::post('/buyItemSuperMarket', ['uses' => 'Account\WebShopController@buyItemInSuperMarket'])->middleware('checkOnline');
     Route::post('/itemWebShopList', ['uses' => 'Account\WebShopController@getItemWebShopList']);
-    Route::post('/buyItemWebShop', ['uses' => 'Account\WebShopController@buyItemWebShop']);
+    Route::post('/buyItemWebShop', ['uses' => 'Account\WebShopController@buyItemWebShop'])->middleware('checkOnline');
 });
 
-Route::group(['prefix' => 'ranking'], function () {
+Route::group(['prefix' => 'ranking', 'middleware' => []], function () {
     Route::get('/getRankAll', ['uses' => 'Rank\RankController@getRankAll']);
     Route::get('/getRankGuild', ['uses' => 'Rank\RankController@getRankGuild']);
     Route::get('/getCharInGuild', ['uses' => 'Rank\RankController@getCharInGuild']);
     Route::get('/getRankDay', ['uses' => 'Rank\RankController@getRankDay']);
-    Route::get('/getRankTop', ['uses' => 'Rank\RankController@getRankTop']);
+    Route::get('/getRankTop', ['uses' => 'Rank\RankController@getRankTop'])->middleware('checkAction');
+});
+
+Route::group(['prefix' => 'card', 'middleware' => ['checkLoginToken']], function () {
+    Route::post('/chargeCard', ['uses' => 'CardPhone\CardPhoneController@chargeCard']);
+    Route::get('/getCardHistory', ['uses' => 'CardPhone\CardPhoneController@getCardHistory']);
+});
+
+Route::group(['prefix' => 'admin'], function () {
+    Route::get('/dashBoard', ['uses' => 'Admin\AdminController@dashBoard']);
+    Route::get('/accountList', ['uses' => 'Admin\AdminController@getAccountList']);
+    Route::post('/getCharacterList', ['uses' => 'Admin\AdminController@getCharacterList']);
+    Route::get('/getCharacterById', ['uses' => 'Admin\AdminController@getCharacterById']);
+    Route::get('/accountDetail', ['uses' => 'Admin\AdminController@getAccountDetail']);
+
+    Route::get('/configReset', ['uses' => 'Admin\ConfigsController@getConfigReset']);
+    Route::get('/configLimitReset', ['uses' => 'Admin\ConfigsController@getConfigLimitReset']);
+    Route::post('/configLimitReset', ['uses' => 'Admin\ConfigsController@postConfigLimitReset']);
+
 });
