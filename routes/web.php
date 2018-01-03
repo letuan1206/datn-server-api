@@ -76,13 +76,30 @@ Route::group(['prefix' => 'card', 'middleware' => ['checkLoginToken']], function
 });
 
 Route::group(['prefix' => 'admin'], function () {
+    Route::post('/login', ['uses' => 'Admin\AdminController@login']);
+
     Route::get('/dashBoard', ['uses' => 'Admin\AdminController@dashBoard']);
+    Route::get('/getAccountCharacterOnline', ['uses' => 'Admin\AdminController@getAccountCharacterOnline']);
+
     Route::get('/accountList', ['uses' => 'Admin\AdminController@getAccountList']);
-    Route::post('/getCharacterList', ['uses' => 'Admin\AdminController@getCharacterList']);
-    Route::get('/getCharacterById', ['uses' => 'Admin\AdminController@getCharacterById']);
     Route::get('/accountDetail', ['uses' => 'Admin\AdminController@getAccountDetail']);
+    Route::post('/getWareHouse', ['uses' => 'Admin\AdminController@getWareHouse']);
+    Route::post('/getItemWebShop', ['uses' => 'Admin\AdminController@getItemWebShop']);
+    Route::post('/addItemWebShop', ['uses' => 'Admin\AdminController@addItemWebShop']);
+    Route::post('/deleteItemWebShop', ['uses' => 'Admin\AdminController@deleteItemWebShop']);
+    Route::post('/updateItemWebShop', ['uses' => 'Admin\AdminController@updateItemWebShop']);
+
+    Route::post('/updateAccount', ['uses' => 'Admin\AdminController@updateAccount']);
+
+    Route::get('/characterList', ['uses' => 'Admin\AdminController@getCharacterList']);
+    Route::post('/characterDetail', ['uses' => 'Admin\AdminController@getCharacterDetail']);
+    Route::post('/updateCharacter', ['uses' => 'Admin\AdminController@updateCharacter']);
+
+    Route::post('/viewLogs', ['uses' => 'Admin\AdminController@viewLogs']);
 
     Route::get('/configReset', ['uses' => 'Admin\ConfigsController@getConfigReset']);
+    Route::post('/configReset', ['uses' => 'Admin\ConfigsController@postConfigReset']);
+
     Route::get('/configLimitReset', ['uses' => 'Admin\ConfigsController@getConfigLimitReset']);
     Route::post('/configLimitReset', ['uses' => 'Admin\ConfigsController@postConfigLimitReset']);
 

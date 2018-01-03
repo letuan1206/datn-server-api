@@ -31,6 +31,15 @@ class ConfigsController extends Controller
         return response()->json($apiFormat);
     }
 
+    public function postConfigReset(Request $request)
+    {
+        DB::table('BK_Config_Reset')->truncate();
+        DB::table('BK_Config_Reset')
+            ->insert($request->params);
+
+        return $this->getConfigReset();
+    }
+
     public function getConfigLimitReset()
     {
         $data = DB::table('BK_Config_Limit_Reset')->orderBy('reset_top', 'asc')->get();
