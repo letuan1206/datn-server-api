@@ -61,6 +61,10 @@ class AllFunctions
         return $response;
     }
 
+    /**
+     * @param $char_name
+     * @return int
+     */
     function check_select_char($char_name)
     {
         $check_select_char = DB::table('AccountCharacter')->select('GameIDC')->where('GameIDC', $char_name)->first();
@@ -69,6 +73,10 @@ class AllFunctions
         } else return 0;
     }
 
+    /**
+     * @param $memb___id
+     * @return int
+     */
     function check_online($memb___id)
     {
 
@@ -80,6 +88,11 @@ class AllFunctions
         }
     }
 
+    /**
+     * @param $memb___id
+     * @param $char
+     * @return int
+     */
     function check_character_in_account($memb___id, $char)
     {
         $check = DB::table('Character')->select('Name', 'AccountID')->where('AccountID', $memb___id)->where('Name', $char)->first();
@@ -125,26 +138,26 @@ class AllFunctions
         return 1;
     }
 
-    function get_reset_day($name)
+    function get_reset_day($account, $name)
     {
-        $day = date('d', time());
-        $month = date('m', time());
-        $year = date('Y', time());
+        $reset_in_day = DB::table('Log_Resets')
+            ->whereDate('reset_time', date('Y-m-d H:i:s', time()))
+            ->where('account', $account)
+            ->where('name', $name)
+            ->get();
 
-        $list = DB::table('TopReset')->select('name', 'reset')
-            ->where('day', $day)
-            ->where('month', $month)
-            ->where('year', $year)
-            ->where('name', $name)->get();
+        return count($reset_in_day);
+    }
 
-        $reset_day = 0;
-        if (count($list) > 0) {
-            foreach ($list as $item) {
-                $reset_day += $item->reset;
-            }
-        }
+    function get_reset_month($account, $name)
+    {
+        $reset_in_day = DB::table('Log_Resets')
+            ->whereMonth('reset_time', date('m', time()))
+            ->where('account', $account)
+            ->where('name', $name)
+            ->get();
 
-        return $reset_day;
+        return count($reset_in_day);
     }
 
     function getItemSerial()
@@ -182,5 +195,220 @@ class AllFunctions
     function check_duplicate_item_serial($listSerial)
     {
         return count($listSerial) === count(array_flip($listSerial));
+    }
+
+    /**
+     * @param $char_top
+     * @param $list_ghrs
+     * @param $list_relife
+     * @param $char_top_1
+     * @return int
+     */
+    function calculateLimitReset($char_top, $list_ghrs, $list_relife, $char_top_1)
+    {
+        $get_day = date('w', time());
+        $reset_limit_top_1 = $list_ghrs[0]->max_reset_in_day;
+        if ($char_top['Top_0h'] == 1) {
+            $arr = $list_ghrs[0];
+        } else if ($char_top['Top_0h'] == 0) {
+            $arr = $list_ghrs[count($list_ghrs) - 1];
+        } else {
+            for ($i = count($list_ghrs) - 1; $i >= 0; $i--) {
+                if ($char_top['Top_0h'] > $list_ghrs[$i]->reset_top) {
+                    $arr = $list_ghrs[$i];
+                    break;
+                }
+            }
+        }
+//        print_r($arr);
+
+        $reset_limit = 0;
+        if (isset($arr)) {
+            if ($char_top['Top_0h'] == 1) {
+                $reset_limit = $arr->max_reset_in_day;
+            } else {
+                $reset_top_1 = $char_top_1->Resets;
+
+                for ($i = 0; $i < $char_top_1->Relifes; $i++) {
+                    $reset_top_1 += $list_relife[$i]->reset;
+                }
+
+                $reset_char = $char_top['Resets'];
+                for ($i = 0; $i < $char_top['Relifes']; $i++) {
+                    $reset_char += $list_relife[$i]->reset;
+                }
+                $reset_limit = $reset_top_1 - $reset_char + $list_ghrs[0]->max_reset_in_day;
+
+                if ($reset_limit > $arr->max_reset_in_day) {
+                    $reset_limit = $arr->max_reset_in_day;
+                }
+            }
+//
+//            if($get_day == 6) {
+//                $reset_limit_top_1 = $reset_limit_top_1 + floor($reset_limit_top_1 * $arr->percent_saturday / 100);
+//                $reset_limit = $reset_limit + floor($reset_limit * $arr->percent_saturday / 100);
+//            } else if($get_day == 0) {
+//                $reset_limit_top_1 = $reset_limit_top_1 + floor($reset_limit_top_1 * $arr->percent_sunday / 100);
+//                $reset_limit = $reset_limit + floor($reset_limit * $arr->percent_sunday / 100);
+//            }
+//
+//            print_r($get_day);
+
+            if ($arr->distance_top_day_reset > 0) {
+                $reset_limit = $reset_limit - $reset_limit_top_1 * $arr->distance_top_day_reset;
+            }
+        }
+
+        return (int)$reset_limit;
+    }
+
+    function calResetConfigInfo($char, $list_ghrs)
+    {
+        $num_ghrs = count($list_ghrs);
+//        $reset_info = 0;
+        for ($i = 0; $i < $num_ghrs; $i++) {
+            if ($char->Resets > $list_ghrs[$i]->reset) {
+                $reset_info = $list_ghrs[$i];
+            }
+        }
+        return $reset_info;
+    }
+
+    function getPositionResetConfig($char, $list_ghrs)
+    {
+        $num_ghrs = count($list_ghrs);
+        $pos = 0;
+        for ($i = 0; $i < $num_ghrs; $i++) {
+            if ($char->Resets >= $list_ghrs[$i]->reset) {
+                $pos = $i;
+            }
+        }
+        return $pos;
+    }
+
+    function getClassDefault($char)
+    {
+        switch ($char) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+                return 0;
+                break;
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+                return 16;
+                break;
+            case 32:
+            case 33:
+
+            case 34:
+            case 35:
+                return 32;
+                break;
+            case 48:
+
+            case 49:
+            case 50:
+                return 48;
+                break;
+            case 64:
+
+            case 65:
+            case 66:
+                return 64;
+                break;
+            case 80:
+
+            case 81:
+
+            case 82:
+            case 83:
+                return 80;
+                break;
+            case 96:
+
+            case 97:
+            case 98:
+                return 96;
+                break;
+            default:
+                return -1;
+        }
+    }
+
+    function getClassName($char_class)
+    {
+        switch ($char_class) {
+            case 0:
+                $class_name = "Dark Wizard";
+                break;
+            case 1:
+                $class_name = "Soul Master";
+                break;
+            case 2:
+                $class_name = "Grand Master";
+                break;
+
+            case 16:
+                $class_name = "Dark Knight";
+                break;
+            case 17:
+                $class_name = "Blade Knight";
+                break;
+            case 18:
+            case 19:
+                $class_name = "Blade Master";
+                break;
+
+            case 32:
+                $class_name = "ELF";
+                break;
+            case 33:
+                $class_name = "Muse ELF";
+                break;
+            case 34:
+            case 35:
+                $class_name = "Hight Elf";
+                break;
+
+            case 48:
+                $class_name = "Magic Gladiator";
+                break;
+            case 49:
+            case 50:
+                $class_name = "Duel Master";
+                break;
+
+            case 64:
+                $class_name = "Dark Lord";
+                break;
+            case 65:
+            case 66:
+                $class_name = "Lord Emperor";
+                break;
+
+            case 80:
+                $class_name = "Summoner";
+                break;
+            case 81:
+                $class_name = "Blood Summoner";
+                break;
+            case 82:
+            case 83:
+                $class_name = "Dimension Master";
+                break;
+
+            case 96:
+                $class_name = "Rage Fighter";
+                break;
+            case 97:
+            case 98:
+                $class_name = "First Master";
+                break;
+        };
+        return $class_name;
     }
 }
